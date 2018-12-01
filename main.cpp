@@ -30,7 +30,7 @@ struct ScopedPtr {
         p = other;
         return *this;
     }
-
+    T *data() const {return p;}
     T *operator->() const {
         return p;
     }
@@ -54,7 +54,7 @@ public:
     virtual ~Object();
 protected:
     Object(ObjectPrivate& d);
-    ScopedPtr<ObjectPrivate> d_ptr;
+    ObjectPrivate* d_ptr;
 private:
     Q_DECLARE_PRIVATE(Object)
 };
@@ -78,12 +78,11 @@ public:
     ObjectPrivate() {
         printThis(this);
     }
-    virtual ~ObjectPrivate() {
-        printThis(this);
-    }
+    virtual ~ObjectPrivate();
     void * operator new(size_t sz);
+    void* operator new(std::size_t sz, void* p);
     void operator delete(void *p, size_t sz);
-    char a[100];
+//    char a[1];
 };
 
 void *Object::operator new(size_t sz) {
@@ -100,7 +99,14 @@ void Object::operator delete(void *p, size_t sz) {
 }
 
 
-Object::Object() : Object(*(new ObjectPrivate)) {printThis(this);}
+//Object::Object() : Object(*(new ObjectPrivate)) {printThis(this);}
+
+Object::Object() {
+    printThis(this);
+    // not consider padding and alighment yet
+    d_ptr = reinterpret_cast<ObjectPrivate *>(reinterpret_cast<char *>(this) + sizeof (this));
+    new (d_ptr) ObjectPrivate;
+}
 
 Object::~Object() {
     printThis(this);
@@ -110,9 +116,20 @@ Object::Object(ObjectPrivate &d) : d_ptr(&d)
 {
 }
 
+ObjectPrivate::~ObjectPrivate() {
+    printThis(this);
+}
+
 void *ObjectPrivate::operator new(size_t sz)
 {
     auto ret = ::operator new(sz);
+    printNew(sz, ret);
+    return ret;
+}
+
+void *ObjectPrivate::operator new(size_t sz, void *p)
+{
+    auto ret = ::operator new(sz, p);
     printNew(sz, ret);
     return ret;
 }
