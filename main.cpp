@@ -90,7 +90,7 @@ public:
     char a[100];
 };
 
-Object::Object() : d_ptr(new ObjectPrivate) {}
+Object::Object() : Object(*(new ObjectPrivate)) {}
 
 Object::~Object() {
 }
