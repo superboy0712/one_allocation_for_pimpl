@@ -95,9 +95,8 @@ Object::Object() : d_ptr(new ObjectPrivate) {}
 Object::~Object() {
 }
 
-Object::Object(ObjectPrivate &dd)
+Object::Object(ObjectPrivate &d) : d_ptr(&d)
 {
-
 }
 
 void *ObjectPrivate::operator new(size_t sz)
