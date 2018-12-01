@@ -60,10 +60,11 @@ private:
 };
 
 
-#define printNew(sz) cout << __PRETTY_FUNCTION__ << "(" << sz << ")" << endl;
+#define printNew(sz, p) cout << __PRETTY_FUNCTION__ << "(" << sz << ") @" << p << endl;
 
 #define printDelete(p, sz) cout << __PRETTY_FUNCTION__ << "(" << p << ") of size " << sz << endl;
 
+#define printThis(p) cout << __PRETTY_FUNCTION__ << " @" << p << endl;
 int main()
 {
     cout << "Hello World!" << endl;
@@ -72,27 +73,37 @@ int main()
     return 0;
 }
 
-
-void *Object::operator new(size_t sz) {
-    printNew(sz)
-    return ::operator new(sz);
-}
-
-void Object::operator delete(void *p, size_t sz) {
-    printDelete(p, sz)
-    ::operator delete(p);
-}
-
 class ObjectPrivate {
 public:
+    ObjectPrivate() {
+        printThis(this);
+    }
+    virtual ~ObjectPrivate() {
+        printThis(this);
+    }
     void * operator new(size_t sz);
     void operator delete(void *p, size_t sz);
     char a[100];
 };
 
-Object::Object() : Object(*(new ObjectPrivate)) {}
+void *Object::operator new(size_t sz) {
+    sz += sizeof(ObjectPrivate);
+    auto ret = ::operator new(sz);
+    printNew(sz, ret);
+    return ret;
+}
+
+void Object::operator delete(void *p, size_t sz) {
+    sz += sizeof(ObjectPrivate);
+    printDelete(p, sz)
+    ::operator delete(p);
+}
+
+
+Object::Object() : Object(*(new ObjectPrivate)) {printThis(this);}
 
 Object::~Object() {
+    printThis(this);
 }
 
 Object::Object(ObjectPrivate &d) : d_ptr(&d)
@@ -101,8 +112,9 @@ Object::Object(ObjectPrivate &d) : d_ptr(&d)
 
 void *ObjectPrivate::operator new(size_t sz)
 {
-    printNew(sz)
-    return ::operator new(sz);
+    auto ret = ::operator new(sz);
+    printNew(sz, ret);
+    return ret;
 }
 
 void ObjectPrivate::operator delete(void *p, size_t sz)
