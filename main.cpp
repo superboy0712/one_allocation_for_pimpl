@@ -68,8 +68,12 @@ private:
 int main()
 {
     cout << "Hello World!" << endl;
-    auto a = new Object;
-    delete a;
+    try {
+        auto a = new Object;
+        delete a;
+    } catch (...) {
+        std::cerr << "what!" << endl;
+    }
     return 0;
 }
 
@@ -136,6 +140,7 @@ void *ObjectPrivate::operator new(size_t sz, void *p)
 {
     auto ret = ::operator new(sz, p);
     printNew(sz, ret);
+    throw std::exception();
     return ret;
 }
 
