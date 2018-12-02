@@ -51,7 +51,7 @@ public:
     void * operator new(size_t sz);
     void operator delete(void *p, size_t sz);
     Object();
-    virtual ~Object();
+    ~Object();
 protected:
     Object(ObjectPrivate& d);
     ObjectPrivate* d_ptr;
@@ -78,7 +78,7 @@ public:
     ObjectPrivate() {
         printThis(this);
     }
-    virtual ~ObjectPrivate();
+    ~ObjectPrivate();
     void * operator new(size_t sz);
     void* operator new(std::size_t sz, void* p);
     void operator delete(void *p, size_t sz);
@@ -89,6 +89,9 @@ void *Object::operator new(size_t sz) {
     sz += sizeof(ObjectPrivate);
     auto ret = ::operator new(sz);
     printNew(sz, ret);
+    cout << "sizeof(Object): " << sizeof(Object) << endl;
+    cout << "sizeof(ObjectPrivate): " << sizeof(ObjectPrivate) << endl;
+    cout << "sum size: " << sizeof(Object) + sizeof(ObjectPrivate) << endl;
     return ret;
 }
 
@@ -104,7 +107,7 @@ void Object::operator delete(void *p, size_t sz) {
 Object::Object() {
     printThis(this);
     // not consider padding and alighment yet
-    d_ptr = reinterpret_cast<ObjectPrivate *>(reinterpret_cast<char *>(this) + sizeof (this));
+    d_ptr = reinterpret_cast<ObjectPrivate *>(reinterpret_cast<char *>(this) + sizeof (Object));
     new (d_ptr) ObjectPrivate;
 }
 
