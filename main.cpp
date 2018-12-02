@@ -81,11 +81,13 @@ class ObjectPrivate {
 public:
     ObjectPrivate() {
         printThis(this);
+        throw std::exception();
     }
     virtual ~ObjectPrivate();
     void * operator new(size_t sz);
-    void* operator new(std::size_t sz, void* p);
+    void* operator new(std::size_t sz, void* place);
     void operator delete(void *p, size_t sz);
+    void operator delete(void *p, void *place);
     char a[100];
 };
 
@@ -93,9 +95,9 @@ void *Object::operator new(size_t sz) {
     sz += sizeof(ObjectPrivate);
     auto ret = ::operator new(sz);
     printNew(sz, ret);
-    cout << "sizeof(Object): " << sizeof(Object) << endl;
-    cout << "sizeof(ObjectPrivate): " << sizeof(ObjectPrivate) << endl;
-    cout << "sum size: " << sizeof(Object) + sizeof(ObjectPrivate) << endl;
+//    cout << "sizeof(Object): " << sizeof(Object) << endl;
+//    cout << "sizeof(ObjectPrivate): " << sizeof(ObjectPrivate) << endl;
+//    cout << "sum size: " << sizeof(Object) + sizeof(ObjectPrivate) << endl;
     return ret;
 }
 
@@ -118,6 +120,8 @@ Object::Object() {
 Object::~Object() {
     d_ptr->~ObjectPrivate();
     d_ptr = nullptr;
+//    delete (d_ptr);
+
     printThis(this);
 }
 
@@ -140,12 +144,16 @@ void *ObjectPrivate::operator new(size_t sz, void *p)
 {
     auto ret = ::operator new(sz, p);
     printNew(sz, ret);
-    throw std::exception();
     return ret;
 }
 
 void ObjectPrivate::operator delete(void *p, size_t sz)
 {
-    printDelete(p, sz)
+    printDelete(p, sz);
     ::operator delete(p);
+}
+
+void ObjectPrivate::operator delete(void *p, void *place)
+{
+    printDelete(p, place);
 }
