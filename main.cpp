@@ -51,7 +51,7 @@ public:
     void * operator new(size_t sz);
     void operator delete(void *p, size_t sz);
     Object();
-    ~Object();
+    virtual ~Object();
 protected:
     Object(ObjectPrivate& d);
     ObjectPrivate* d_ptr;
@@ -78,11 +78,11 @@ public:
     ObjectPrivate() {
         printThis(this);
     }
-    ~ObjectPrivate();
+    virtual ~ObjectPrivate();
     void * operator new(size_t sz);
     void* operator new(std::size_t sz, void* p);
     void operator delete(void *p, size_t sz);
-//    char a[1];
+    char a[100];
 };
 
 void *Object::operator new(size_t sz) {
@@ -112,6 +112,8 @@ Object::Object() {
 }
 
 Object::~Object() {
+    d_ptr->~ObjectPrivate();
+    d_ptr = nullptr;
     printThis(this);
 }
 
