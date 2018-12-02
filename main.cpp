@@ -114,7 +114,11 @@ Object::Object() {
     printThis(this);
     // not consider padding and alighment yet
     d_ptr = reinterpret_cast<ObjectPrivate *>(reinterpret_cast<char *>(this) + sizeof (Object));
-    new (d_ptr) ObjectPrivate;
+    try {
+        new (d_ptr) ObjectPrivate;
+    } catch (std::exception& e) {
+        cout << __PRETTY_FUNCTION__ << ": " << e.what() << endl;
+    }
 }
 
 Object::~Object() {
