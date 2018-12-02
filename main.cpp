@@ -56,6 +56,7 @@ protected:
     Object(ObjectPrivate& d);
     ObjectPrivate* d_ptr;
 private:
+    bool isHeapAllocated = false;
     Q_DECLARE_PRIVATE(Object)
 };
 
@@ -91,7 +92,12 @@ int main()
 //        std::cerr << "what!" << endl;
 //    }
 //    Test t;
-    Object o;
+    try {
+        Object o;
+
+    } catch (std::exception &e) {
+        std::cout << e.what() <<endl;
+    }
 //    try {
 //        C b;
 
@@ -119,6 +125,7 @@ void *Object::operator new(size_t sz) {
     sz += sizeof(ObjectPrivate);
     auto ret = ::operator new(sz);
     printNew(sz, ret);
+    reinterpret_cast<Object *>(ret)->isHeapAllocated = true;
 //    cout << "sizeof(Object): " << sizeof(Object) << endl;
 //    cout << "sizeof(ObjectPrivate): " << sizeof(ObjectPrivate) << endl;
 //    cout << "sum size: " << sizeof(Object) + sizeof(ObjectPrivate) << endl;
@@ -137,12 +144,17 @@ void Object::operator delete(void *p, size_t sz) {
 Object::Object() {
     printThis(this);
     // not consider padding and alighment yet
-    d_ptr = reinterpret_cast<ObjectPrivate *>(reinterpret_cast<char *>(this) + sizeof (Object));
-    try {
+    if (isHeapAllocated) {
+        d_ptr = reinterpret_cast<ObjectPrivate *>(reinterpret_cast<char *>(this) + sizeof (Object));
         new (d_ptr) ObjectPrivate;
-    } catch (std::exception& e) {
-        cout << __PRETTY_FUNCTION__ << ": " << e.what() << endl;
     }
+    else
+        Object(*(new ObjectPrivate));
+    //    try {
+//        new (d_ptr) ObjectPrivate;
+//    } catch (std::exception& e) {
+//        cout << __PRETTY_FUNCTION__ << ": " << e.what() << endl;
+//    }
 }
 
 Object::~Object() {
