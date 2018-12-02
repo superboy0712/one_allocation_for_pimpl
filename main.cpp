@@ -49,7 +49,7 @@ class ObjectPrivate;
 class Object {
 public:
     void * operator new(size_t sz);
-    void operator delete(void *p, size_t sz);
+    void operator delete(void *p);
     Object();
     virtual ~Object();
 protected:
@@ -89,7 +89,7 @@ int main()
 //        auto a = new Object;
 //        delete a;
 //    } catch (...) {
-//        std::cerr << "what!" << endl;
+//        std::cout << "what!" << endl;
 //    }
 //    Test t;
     try {
@@ -111,7 +111,7 @@ class ObjectPrivate {
 public:
     ObjectPrivate() {
         printThis(this);
-        throw std::exception();
+//        throw std::exception();
     }
     virtual ~ObjectPrivate();
     void * operator new(size_t sz);
@@ -132,9 +132,9 @@ void *Object::operator new(size_t sz) {
     return ret;
 }
 
-void Object::operator delete(void *p, size_t sz) {
-    sz += sizeof(ObjectPrivate);
-    printDelete(p, sz)
+void Object::operator delete(void *p) {
+//    sz += sizeof(ObjectPrivate);
+    printThis(p)
     ::operator delete(p);
 }
 
@@ -148,21 +148,18 @@ Object::Object() {
         d_ptr = reinterpret_cast<ObjectPrivate *>(reinterpret_cast<char *>(this) + sizeof (Object));
         new (d_ptr) ObjectPrivate;
     }
-    else
-        Object(*(new ObjectPrivate));
-    //    try {
-//        new (d_ptr) ObjectPrivate;
-//    } catch (std::exception& e) {
-//        cout << __PRETTY_FUNCTION__ << ": " << e.what() << endl;
-//    }
+    else d_ptr = new ObjectPrivate;
+//        Object(*(new ObjectPrivate));
 }
 
 Object::~Object() {
-    if(d_ptr) d_ptr->~ObjectPrivate();
-    d_ptr = nullptr;
-//    delete (d_ptr);
-
     printThis(this);
+    if(d_ptr) {
+        if(not isHeapAllocated) delete d_ptr;
+        else d_ptr->~ObjectPrivate();
+    }
+    d_ptr = nullptr;
+
 }
 
 Object::Object(ObjectPrivate &d) : d_ptr(&d)
