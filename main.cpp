@@ -65,15 +65,39 @@ private:
 #define printDelete(p, sz) cout << __PRETTY_FUNCTION__ << "(" << p << ") of size " << sz << endl;
 
 #define printThis(p) cout << __PRETTY_FUNCTION__ << " @" << p << endl;
+
+struct Test : public Object {
+    Object m;
+};
+
+struct Base {
+    Base() {printThis(this);}
+    ~Base() {printThis(this);}
+};
+
+struct C {
+    Base b;
+    C() {printThis(this); throw std::exception();}
+    ~C() {printThis(this);}
+};
+
 int main()
 {
     cout << "Hello World!" << endl;
-    try {
-        auto a = new Object;
-        delete a;
-    } catch (...) {
-        std::cerr << "what!" << endl;
-    }
+//    try {
+//        auto a = new Object;
+//        delete a;
+//    } catch (...) {
+//        std::cerr << "what!" << endl;
+//    }
+//    Test t;
+    Object o;
+//    try {
+//        C b;
+
+//    } catch (std::exception &e) {
+//        std::cout << e.what() <<endl;
+//    }
     return 0;
 }
 
@@ -122,7 +146,7 @@ Object::Object() {
 }
 
 Object::~Object() {
-    d_ptr->~ObjectPrivate();
+    if(d_ptr) d_ptr->~ObjectPrivate();
     d_ptr = nullptr;
 //    delete (d_ptr);
 
